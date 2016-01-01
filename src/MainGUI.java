@@ -1,3 +1,7 @@
+import database.OracleConnection;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -29,5 +33,14 @@ public class MainGUI extends JFrame {
         java.awt.EventQueue.invokeLater(() -> {
             new MainGUI().setVisible(true);
         });
+        
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                OracleConnection.closeConnection();
+            } catch (SQLException ex) {
+                System.out.println("Impossible de fermer la connexion à la base de données.");
+            }
+            System.out.println("Fermeture du programme.");
+        }, "Shutdown-thread"));
     }
 }

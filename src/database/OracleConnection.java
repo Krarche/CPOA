@@ -9,6 +9,9 @@ import java.util.Properties;
 
 public class OracleConnection {
     
+    private static Connection CONNECTION = null;
+    private static final String CONFIGURATION = "src/database/connection.properties";
+    
     public static Connection getConnection() throws ClassNotFoundException, IOException, SQLException {
         if(CONNECTION != null)
             return CONNECTION;
@@ -27,10 +30,20 @@ public class OracleConnection {
             String url = "jdbc:oracle:" + pilote + ":" + user + "/" + password + "@" + server + ":" + port + ":" + service;
 
             CONNECTION = DriverManager.getConnection(url);
+            System.out.println("Connexion à la base de données établie.");
             return CONNECTION;
         }
     }
     
-    private static Connection CONNECTION = null;
-    private static final String CONFIGURATION = "src/database/connection.properties";
+    public static void closeConnection() throws SQLException {
+        if(CONNECTION != null) {
+            CONNECTION.close();
+            CONNECTION = null;
+            System.out.println("Connexion à la base de données fermée.");
+        }
+        else
+            System.out.println("Aucune connexion à fermer.");
+        
+        
+    }
 }

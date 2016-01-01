@@ -1,12 +1,17 @@
 package schedule.gui;
 
+import database.DBAccess;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.sql.SQLException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -18,9 +23,12 @@ public class Login extends JPanel {
     private final JTextField textUsername = new JTextField(20);
     private final JPasswordField fieldPassword = new JPasswordField(20);
     private final JButton buttonLogin = new JButton("S'identifier");
+    private final JFrame parent;
     
     public Login(JFrame parent) {
-        parent.setResizable(false);
+        this.parent = parent;
+        this.parent.setResizable(false);
+        this.parent.getRootPane().setDefaultButton(buttonLogin);
         initComponents();
     }
     
@@ -53,7 +61,66 @@ public class Login extends JPanel {
         
         setBorder(BorderFactory.createTitledBorder(
         BorderFactory.createEtchedBorder(), "Identification"));
+        
+        buttonLogin.addActionListener((ActionEvent e) -> {
+            actionPermorfed(e);
+        });  
     }
+
+    private void actionPermorfed(ActionEvent e) {
+        if (e.getSource() == buttonLogin)
+            performLogin();
+    }
+    
+    private void performLogin() {
+        String username = textUsername.getText();
+        char[] password = fieldPassword.getPassword();
+        String loginType = "null";
+        boolean validUsername = false;
+        
+        if(username.length() == 0 && password.length == 0)
+            JOptionPane.showMessageDialog(this, "Veuillez saisir votre nom d'utilisateur et votre mot de passe.");
+        else if(username.length() == 0)
+            JOptionPane.showMessageDialog(this, "Veuillez saisir votre nom d'utilisateur.");
+        else if(password.length == 0)
+            JOptionPane.showMessageDialog(this, "Veuillez saisir votre mot de passe.");
+        else {
+            if (username.startsWith("p")) {
+                loginType = "player";
+                validUsername = true;
+            }                
+            else if (username.startsWith("a")) {
+                loginType = "admin";
+                validUsername = true;
+            }             
+            else 
+                JOptionPane.showMessageDialog(this, "Veuillez entrer un nom d'utilisateur valide.");   
+        }
+        
+        if(validUsername) {
+            try {
+                DBAccess db = new DBAccess();
+                if(db.checkLogin(username, String.copyValueOf(password))) {
+                    if(loginType.equals("player")) {
+                        parent.remove(this);
+                        parent.add(new PlayerReservation(this.parent));
+                    }
+                    else {
+                        parent.remove(this);
+                        parent.add(new AdminSchedule(this.parent));
+                    }
+                }
+                else
+                  System.out.println("Indentification échouée.");
+            } catch (ClassNotFoundException | IOException | SQLException ex) {
+                System.out.println("Impossible d'établir la connexion à la base de donnée");
+            } 
+        }
+        
+            
+    }
+    
+    
     
     
 }
