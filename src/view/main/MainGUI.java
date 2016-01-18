@@ -1,12 +1,19 @@
-import database.OracleConnection;
+package view.main;
+
+import controller.database.OracleConnection;
+import java.awt.GridBagLayout;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import schedule.gui.Login;
 
+
+/**
+ * Fenêtre principale de l'application
+ * @author Kevin GUTIERREZ
+ * @author Pierre DAUTREY
+ * @author Corentin BECT
+ */
 public class MainGUI extends JFrame {
     
     private final Login login = new Login(this);
@@ -17,6 +24,7 @@ public class MainGUI extends JFrame {
     }
     
     private void initComponents() {
+        setLayout(new GridBagLayout());
         add(login);
         pack();
         setLocationRelativeTo(null);
@@ -34,6 +42,7 @@ public class MainGUI extends JFrame {
             new MainGUI().setVisible(true);
         });
         
+        // Lors de la fermeture de l'application, ferme la connexion si existante
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 OracleConnection.closeConnection();
