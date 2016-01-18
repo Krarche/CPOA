@@ -1,8 +1,11 @@
-package schedule.gui;
+package view.main;
 
-import database.DBAccess;
+import view.player.PlayerMain;
+import view.admin.AdminMain;
+import controller.database.DBAccess;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -16,6 +19,12 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+/**
+ * Panel contenant le formulaire de connexion
+ * @author Kevin GUTIERREZ
+ * @author Pierre DAUTREY
+ * @author Corentin BECT
+ */
 public class Login extends JPanel {
     
     private final JLabel labelUsername = new JLabel("Nom d'utilisateur : ");
@@ -78,6 +87,7 @@ public class Login extends JPanel {
         String loginType = "null";
         boolean validUsername = false;
         
+        // Vérifie si un nom d'utilisateur et mot de passe ont été saisi
         if(username.length() == 0 && password.length == 0)
             JOptionPane.showMessageDialog(this, "Veuillez saisir votre nom d'utilisateur et votre mot de passe.");
         else if(username.length() == 0)
@@ -85,7 +95,8 @@ public class Login extends JPanel {
         else if(password.length == 0)
             JOptionPane.showMessageDialog(this, "Veuillez saisir votre mot de passe.");
         else {
-            if (username.startsWith("p")) {
+            // Vérifie le type d'utilisateur saisi
+            if (username.startsWith("p")) { 
                 loginType = "player";
                 validUsername = true;
             }                
@@ -100,19 +111,25 @@ public class Login extends JPanel {
         if(validUsername) {
             try {
                 DBAccess db = new DBAccess();
-                if(db.checkLogin(username, String.copyValueOf(password))) {
-                    if(loginType.equals("player")) {
-                        parent.remove(this);
-                        parent.add(new PlayerReservation(this.parent));
+                // Vérifie si les identifiants saisi sont présents dans la base de données
+                if(db.checkLogin(username, String.copyValueOf(password))) {  
+                    parent.remove(this);
+                    if(loginType.equals("player")) { // Ouvre la fenêtre de réservation d'entrainement
+                        parent.add(new PlayerMain(this.parent,username),
+                                   new GridBagConstraints(-1,-1,1,1,1,1,10,1,new Insets(0, 0, 0, 0),0,0));
+                        parent.pack();
+                        parent.setLocationRelativeTo(null);
                     }
-                    else {
-                        parent.remove(this);
-                        parent.add(new AdminSchedule(this.parent));
+                    else { // Ouvre la fenêtre de gestion de planning
+                        parent.add(new AdminMain(this.parent),
+                                   new GridBagConstraints(-1,-1,1,1,1,1,10,1,new Insets(0, 0, 0, 0),0,0));
+                        parent.pack();
+                        parent.setLocationRelativeTo(null);
                     }
                 }
                 else
-                  System.out.println("Indentification échouée.");
-            } catch (ClassNotFoundException | IOException | SQLException ex) {
+                  JOptionPane.showMessageDialog(this, "Identification échouée.");  
+            } catch (ClassNotFoundException | IOException | SQLException | HeadlessException e) {
                 System.out.println("Impossible d'établir la connexion à la base de donnée");
             } 
         }
